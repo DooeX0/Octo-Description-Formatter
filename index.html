@@ -1,232 +1,2039 @@
 <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#17191c">
-  <meta name="description" content="Генератор одноразовых кодов 2FA по секретному ключу Base32.">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <title>2FA Code Generator</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #17191c;
-      color: #d9dce2;
-      font-synthesis: none;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      --muted: #858b96;
-      --line: #34373c;
-      --blue: #91a9d0;
-      --accent: #7395cc;
-    }
-
-    * { box-sizing: border-box; }
-    body { min-width: 320px; min-height: 100vh; margin: 0; }
-    button, input { font: inherit; }
-    .page { width: min(100% - 32px, 760px); min-height: 100vh; margin: 0 auto; display: flex; flex-direction: column; }
-
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 0; text-align: center; }
-    h1 { margin: 0 0 24px; color: #d2d4d8; font-size: clamp(27px, 5vw, 32px); font-weight: 700; letter-spacing: .01em; }
-
-    .secret-form { position: relative; width: min(100%, 448px); margin: 0 auto; }
-    .secret-input {
-      width: 100%; height: 49px; padding: 0 46px 0 17px;
-      border: 1px solid #3c3f44; border-radius: 6px; outline: none;
-      background: #1a1c1f; color: #e6e8ec; text-align: center;
-      font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 14px; letter-spacing: .04em;
-      transition: border-color .18s, box-shadow .18s;
-    }
-    .secret-input::placeholder { color: #777e89; opacity: 1; }
-    .secret-input:focus { border-color: #718dbb; box-shadow: 0 0 0 3px #718dbb24; }
-    .clear-button { position: absolute; top: 7px; right: 7px; width: 35px; height: 35px; display: none; place-items: center; border: 0; border-radius: 5px; background: transparent; color: #9097a2; cursor: pointer; }
-    .clear-button:hover { background: #2a2d31; color: #e3e6eb; }
-    .secret-form.has-value .clear-button { display: grid; }
-    .error { min-height: 19px; margin: 9px 0 0; color: #df8d8d; font-size: 12px; }
-
-    .code-card {
-      visibility: hidden; opacity: 0; width: min(100%, 448px); min-height: 134px; margin: 18px auto 0; padding: 18px 20px 15px;
-      border: 1px solid #363a40; border-radius: 8px; background: #1b1d20; text-align: left; cursor: pointer;
-      transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
-    }
-    .code-card.visible { visibility: visible; opacity: 1; }
-    .code-card.visible:hover { border-color: #41464d; background: #1d1f22; box-shadow: 0 2px 10px #0002; }
-    .code-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
-    .code { padding: 0; border: 0; background: transparent; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(37px, 10vw, 48px); font-weight: 650; letter-spacing: .13em; color: #edf0f5; font-variant-numeric: tabular-nums; text-align: center; cursor: pointer; }
-    .code:hover { color: #edf0f5; }
-    .code-card:focus-visible, .clear-button:focus-visible, a:focus-visible { outline: 2px solid #91a9d0; outline-offset: 3px; border-radius: 3px; }
-    .timer-row { display: grid; justify-items: center; gap: 8px; margin-top: 8px; color: var(--muted); font-size: 11px; }
-    .timer-track { width: 100%; height: 3px; overflow: hidden; border-radius: 10px; background: #303338; }
-    .timer-fill { width: 100%; height: 100%; border-radius: inherit; background: #7597cb; transition: width .15s linear; }
-    .toast { position: fixed; z-index: 5; left: 50%; bottom: 22px; padding: 9px 14px; border: 1px solid #3b4149; border-radius: 7px; background: #22262b; color: #cbd3de; font-size: 12px; box-shadow: 0 5px 18px #0004; opacity: 0; visibility: hidden; transform: translate(-50%, 5px); transition: opacity .16s ease, transform .16s ease, visibility .16s; }
-    .toast.visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
-
-    @media (max-width: 520px) {
-      .page { width: min(100% - 28px, 760px); }
-      main { padding: 24px 0; }
-    }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-  </style>
-</head>
-<body>
-  <div class="page">
+<html lang="ru" data-theme="dark" data-restoring>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Octo Description Formatter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"
+    ></script>
+    <style>
+      :root {
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        color: var(--ink);
+        background: var(--page);
+        font-synthesis: none;
+        --ink: #e9edef;
+        --muted: #a0aaaf;
+        --line: #292d30;
+        --blue: #42a6c7;
+        --blue-soft: #14272d;
+        --green: #83c99c;
+        --amber: #d3a75f;
+        --surface: #090a0b;
+        --page: #000;
+        --control: #050607;
+        --control-muted: #17191b;
+        --drop: #070809;
+        --table-head: #101214;
+        --table-line: #202326;
+        --label: #bdc4c8;
+        --profile: #cbd2d5;
+        --notice-bg: #251d11;
+        --notice-text: #e3c18b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html[data-restoring] .footnote {
+        visibility: hidden;
+      }
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #4a4d50 #090a0b;
+      }
+      *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      *::-webkit-scrollbar-button {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+      *::-webkit-scrollbar-track {
+        background: #090a0b;
+      }
+      *::-webkit-scrollbar-thumb {
+        background: #414447;
+        border: 2px solid #090a0b;
+        border-radius: 6px;
+      }
+      *::-webkit-scrollbar-thumb:hover {
+        background: #5a5e62;
+      }
+      *::-webkit-scrollbar-corner {
+        background: #090a0b;
+      }
+      @supports selector(::-webkit-scrollbar) {
+        * {
+          scrollbar-width: auto;
+          scrollbar-color: auto;
+        }
+      }
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+      html,
+      body {
+        overflow-anchor: none;
+      }
+      html {
+        overflow-y: scroll;
+        scrollbar-gutter: stable;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .topbar {
+        height: 62px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 28px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+      .brand-mark {
+        width: 27px;
+        height: 27px;
+        border-radius: 7px;
+        background: var(--blue);
+        display: grid;
+        place-items: center;
+        color: white;
+      }
+      .brand-mark svg {
+        width: 16px;
+        height: 16px;
+      }
+      .icon-button {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--control);
+        color: var(--ink);
+        display: grid;
+        place-items: center;
+      }
+      .icon-button:hover {
+        background: var(--control-muted);
+      }
+      .icon-button svg {
+        width: 17px;
+        height: 17px;
+      }
+      main {
+        max-width: 1320px;
+        padding: 27px 28px 40px;
+        margin: 0 auto;
+      }
+      .page-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 22px;
+      }
+      h1 {
+        font-size: 23px;
+        line-height: 1.25;
+        margin: 0 0 5px;
+        font-weight: 650;
+      }
+      .subtitle {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+      }
+      .right-column {
+        align-self: start;
+        height: max(280px, calc(100dvh - 130px));
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+      }
+      .panel-head {
+        min-height: 51px;
+        padding: 14px 17px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .panel-head h2 {
+        font-size: 15px;
+        font-weight: 650;
+        margin: 0;
+      }
+      .panel-body {
+        padding: 17px;
+      }
+      .dropzone {
+        min-height: 130px;
+        border: 1px dashed #aab8bf;
+        background: var(--drop);
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 17px;
+        gap: 9px;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .dropzone.drag {
+        background: var(--blue-soft);
+        border-color: var(--blue);
+      }
+      @media (hover: hover) {
+        .dropzone:hover:not(.drag) {
+          background: var(--table-head);
+          border-color: #555b60;
+        }
+      }
+      .drop-icon {
+        width: 30px;
+        height: 30px;
+        color: var(--blue);
+      }
+      .drop-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .drop-hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .file-name {
+        font-size: 12px;
+        color: var(--green);
+        overflow-wrap: anywhere;
+      }
+      .primary,
+      .secondary,
+      #downloadCsvButton,
+      #downloadXlsxButton {
+        border: 0;
+        border-radius: 5px;
+        min-height: 37px;
+        padding: 0 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      .primary:hover {
+        background: #105a73;
+      }
+      .primary:disabled {
+        background: #a9bac1;
+        cursor: not-allowed;
+      }
+      .secondary {
+        background: var(--control-muted);
+        color: var(--ink);
+      }
+      .secondary:hover,
+      #downloadCsvButton:hover,
+      #downloadXlsxButton:hover {
+        background: #e3e9ec;
+      }
+      .primary svg,
+      .secondary svg {
+        width: 16px;
+        height: 16px;
+      }
+      .field {
+        margin-top: 17px;
+      }
+      .field:first-child {
+        margin-top: 0;
+      }
+      .field label,
+      .label {
+        display: block;
+        font-size: 12px;
+        color: var(--label);
+        font-weight: 600;
+        margin: 0 0 7px;
+      }
+      select,
+      input[type="text"] {
+        width: 100%;
+        min-height: 37px;
+        border: 1px solid #cbd4d9;
+        border-radius: 5px;
+        background: var(--control);
+        color: var(--ink);
+        padding: 0 10px;
+        font-size: 13px;
+      }
+      select:focus,
+      input:focus {
+        outline: none;
+        box-shadow: none;
+      }
+      .mapping-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(136px, 148px);
+        gap: 9px 14px;
+        align-items: center;
+      }
+      .mapping-grid label {
+        font-size: 12px;
+        color: var(--label);
+        line-height: 1.4;
+      }
+      .mapping-grid select {
+        min-height: 38px;
+        padding: 0 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        background-image: linear-gradient(var(--line), var(--line));
+        background-position: right 32px center;
+        background-size: 1px 16px;
+        background-repeat: no-repeat;
+        cursor: pointer;
+        user-select: none;
+      }
+      .mapping-heading {
+        margin-bottom: 14px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      #mappingSection > .help {
+        margin-top: 15px;
+        padding-left: 10px;
+        border-left: 2px solid var(--line);
+        line-height: 1.6;
+      }
+      @supports (appearance: base-select) {
+        .mapping-grid select {
+          appearance: base-select;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .mapping-grid select::picker-icon {
+          content: "";
+          width: 6px;
+          height: 6px;
+          border-right: 1.5px solid currentColor;
+          border-bottom: 1.5px solid currentColor;
+          margin: -3px 3px 0 auto;
+          transform: rotate(45deg);
+        }
+        .mapping-grid select:open::picker-icon {
+          margin-top: 3px;
+          transform: rotate(225deg);
+        }
+        .mapping-grid select::picker(select) {
+          appearance: base-select;
+          position-area: block-end span-inline-end;
+          position-try-fallbacks: none;
+          max-height: min(320px, 100%);
+          overflow-y: auto;
+          margin-block-start: 2px;
+          padding: 4px 0;
+          color: var(--ink);
+          background: var(--control);
+          border: 1px solid #454a4d;
+          border-radius: 5px;
+        }
+        .mapping-grid select option {
+          padding: 5px 8px;
+          outline: none;
+        }
+        .mapping-grid select option:checked,
+        .mapping-grid select option:hover,
+        .mapping-grid select option:focus-visible {
+          color: #fff;
+          background: var(--blue);
+        }
+      }
+      .help {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+        margin-top: 10px;
+      }
+      .divider {
+        height: 1px;
+        background: var(--line);
+        margin: 18px 0;
+      }
+      .switch-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--label);
+        line-height: 1.45;
+      }
+      .switch-row input {
+        accent-color: var(--blue);
+        width: 15px;
+        height: 15px;
+        margin: 0;
+      }
+      .right-column {
+        min-width: 0;
+      }
+      .stats {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .stat strong {
+        color: var(--ink);
+        font-size: 14px;
+        margin-right: 4px;
+      }
+      .preview-empty {
+        min-height: 0;
+        flex: 1;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 30px;
+      }
+      .preview-empty svg {
+        width: 40px;
+        height: 40px;
+        color: #97a8b0;
+        margin-bottom: 12px;
+      }
+      #previewContent {
+        min-height: 0;
+        flex: 1;
+      }
+      .preview-wrap {
+        display: block;
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-gutter: stable;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .preview-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .preview-table thead {
+        display: block;
+        flex: none;
+        background: var(--table-head);
+        border-bottom: 1px solid var(--line);
+      }
+      .preview-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+      .preview-table thead tr {
+        width: calc(100% - var(--preview-scrollbar-width, 10px));
+      }
+      th {
+        text-align: left;
+        background: var(--table-head);
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 650;
+        padding: 10px 13px;
+      }
+      td {
+        padding: 11px 13px;
+        vertical-align: top;
+        border-bottom: 1px solid var(--table-line);
+        font-size: 12px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      th:first-child,
+      td:first-child {
+        width: 25%;
+      }
+      th:last-child,
+      td:last-child {
+        width: 75%;
+      }
+      .profile-cell {
+        overflow-wrap: anywhere;
+        color: var(--profile);
+        vertical-align: top;
+        white-space: pre-line;
+        line-height: 1.6;
+      }
+      .description {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        line-height: 1.6;
+        color: var(--ink);
+        font-size: 13px;
+        cursor: text;
+        user-select: text;
+      }
+      .notice {
+        margin-top: 14px;
+        border-left: 3px solid #d39a3d;
+        background: var(--notice-bg);
+        color: var(--notice-text);
+        padding: 10px 12px;
+        font-size: 12px;
+        line-height: 1.5;
+        display: none;
+      }
+      .notice.show {
+        display: block;
+      }
+      .notice.error {
+        border-color: #bf4c4c;
+        background: #fff2f1;
+        color: #873434;
+      }
+      .preview-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #downloadCsvButton,
+      #downloadXlsxButton {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .preview-search-row {
+        min-width: 90px;
+        max-width: 360px;
+        flex: 1 1 200px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .preview-search-row input {
+        width: 100%;
+        min-width: 0;
+      }
+      .preview-search-row input:focus {
+        outline: none;
+        box-shadow: none;
+        border-color: #454a4d;
+      }
+      .right-column > .panel-head {
+        border-bottom: 0;
+      }
+      .search-count {
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .search-empty {
+        border: 0;
+      }
+      .search-count {
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .search-empty {
+        border: 0;
+      }
+      #fileInput {
+        display: none;
+      }
+      .footnote {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 14px;
+        line-height: 1.5;
+      }
+      .history-list {
+        display: grid;
+        gap: 7px;
+      }
+      .history-empty {
+        color: var(--muted);
+        font-size: 12px;
+        padding: 4px 0;
+      }
+      .history-entry {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 34px;
+        align-items: center;
+        gap: 7px;
+      }
+      .history-open {
+        min-width: 0;
+        padding: 8px 9px;
+        background: var(--drop);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--ink);
+        text-align: left;
+      }
+      .history-open:hover {
+        border-color: var(--blue);
+        background: var(--blue-soft);
+      }
+      .history-name {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .history-meta {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .history-delete {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--control);
+        color: var(--muted);
+      }
+      .history-delete:hover {
+        color: #bd4141;
+        border-color: #bd4141;
+      }
+      .history-delete svg {
+        width: 15px;
+        height: 15px;
+      }
+      .history-note {
+        display: none;
+      }
+      .confirm-dialog {
+        width: min(430px, calc(100vw - 32px));
+        padding: 0;
+        color: var(--ink);
+        background: var(--surface);
+        border: 1px solid #363a3d;
+        border-radius: 7px;
+        box-shadow: 0 18px 60px #000b;
+      }
+      .confirm-dialog::backdrop {
+        background: rgb(0 0 0 / 72%);
+      }
+      .confirm-dialog-body {
+        padding: 22px;
+      }
+      .confirm-dialog h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 650;
+      }
+      .confirm-dialog p {
+        margin: 12px 0 22px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .confirm-dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+      }
+      .confirm-dialog button {
+        min-height: 36px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--ink);
+        background: var(--control-muted);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .confirm-dialog button:hover {
+        filter: brightness(1.15);
+      }
+      .confirm-dialog .confirm-delete {
+        border-color: #a63232;
+        color: #fff;
+        background: #a63232;
+      }
+      [data-theme="dark"] {
+        color-scheme: dark;
+        color: var(--ink);
+        background: var(--page);
+        --ink: #e9edef;
+        --muted: #a0aaaf;
+        --line: #292d30;
+        --blue: #42a6c7;
+        --blue-soft: #14272d;
+        --green: #83c99c;
+        --surface: #090a0b;
+        --page: #000;
+        --control: #050607;
+        --control-muted: #17191b;
+        --drop: #070809;
+        --table-head: #101214;
+        --table-line: #202326;
+        --label: #bdc4c8;
+        --profile: #cbd2d5;
+        --notice-bg: #332a1c;
+        --notice-text: #e3c18b;
+      }
+      [data-theme="dark"] .topbar {
+        background: #050505;
+      }
+      [data-theme="dark"] .panel {
+        background: var(--surface);
+      }
+      [data-theme="dark"] select,
+      [data-theme="dark"] input[type="text"] {
+        border-color: #303437;
+      }
+      [data-theme="dark"] .preview-search-row input {
+        border-color: #303437;
+      }
+      [data-theme="dark"] .dropzone {
+        border-color: #363a3d;
+      }
+      [data-theme="dark"] .secondary:hover,
+      [data-theme="dark"] #downloadCsvButton:hover,
+      [data-theme="dark"] #downloadXlsxButton:hover {
+        background: #35454d;
+      }
+      [data-theme="dark"] .history-open:hover {
+        background: #203c47;
+      }
+      [data-theme="dark"] .preview-empty svg {
+        color: #768b95;
+      }
+      [data-theme="dark"] .notice.error {
+        border-color: #d36c6c;
+        background: #3a2224;
+        color: #f1b7b7;
+      }
+      @media (max-width: 850px) {
+        main {
+          padding: 21px 16px 30px;
+        }
+        .topbar {
+          padding: 0 16px;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .right-column {
+          height: 70vh;
+          min-height: 280px;
+        }
+        .page-heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+      @media (max-width: 520px) {
+        .local-mark span {
+          display: none;
+        }
+        .stats {
+          gap: 9px;
+          flex-wrap: wrap;
+        }
+        .panel-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .preview-actions {
+          width: 100%;
+        }
+        .preview-actions button {
+          flex: 1;
+        }
+        .preview-search-row {
+          width: 100%;
+          max-width: none;
+          flex: none;
+        }
+        th:first-child,
+        td:first-child {
+          width: 34%;
+        }
+        th:last-child,
+        td:last-child {
+          width: 66%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M5 5h14v14H5z" />
+            <path d="M8 9h8M8 12h8M8 15h5" /></svg></span
+        ><span>Octo Description Formatter</span>
+      </div>
+    </header>
     <main>
-      <h1>2FA Code Generator</h1>
-      <form class="secret-form" id="secretForm" autocomplete="off" onsubmit="return false">
-        <label for="secret" hidden>Секретный ключ Base32</label>
-        <input class="secret-input" id="secret" type="text" inputmode="text" spellcheck="false" autocapitalize="characters" autocomplete="off" placeholder="Enter secret code" aria-describedby="error" aria-invalid="false">
-        <button class="clear-button" id="clear" type="button" aria-label="Очистить ключ" title="Очистить"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
-      </form>
-      <p class="error" id="error" role="status" aria-live="polite"></p>
-
-      <section class="code-card" id="codeCard" role="button" tabindex="0" aria-label="Скопировать код подтверждения">
-        <div class="code-row"><span class="code" id="code" aria-live="polite" aria-atomic="true">------</span></div>
-        <div class="timer-row"><span><b id="seconds">30</b> сек.</span><div class="timer-track" aria-hidden="true"><div class="timer-fill" id="timerFill"></div></div></div>
-      </section>
-      <div class="toast" id="toast" role="status" aria-live="polite">Код скопирован</div>
-
-
+      <div class="layout">
+        <div class="left-column">
+          <section class="panel source-panel">
+            <div class="panel-head"><h2>Импорт</h2></div>
+            <div class="panel-body">
+              <div
+                class="dropzone"
+                id="dropzone"
+                tabindex="0"
+                role="button"
+                aria-label="Выбрать или перетащить файл"
+              >
+                <svg
+                  class="drop-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                >
+                  <path d="M12 16V3m0 0L7 8m5-5 5 5" />
+                  <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+                </svg>
+                <div class="drop-title">Загрузите Таблицу</div>
+                <div class="drop-hint">Поддерживаются .xlsx и .csv</div>
+                <button class="secondary" id="chooseFile" type="button">
+                  Выбрать файл
+                </button>
+                <div class="file-name" id="fileName"></div>
+              </div>
+              <input id="fileInput" type="file" accept=".xlsx,.xls,.csv,.txt" />
+              <div id="sheetField" class="field" hidden>
+                <label for="sheetSelect">Лист книги</label
+                ><select id="sheetSelect"></select>
+              </div>
+              <div id="columnField" class="field" hidden>
+                <label for="descriptionColumn"
+                  >В каком столбце данные аккаунтов?</label
+                ><select id="descriptionColumn"></select>
+                <div class="help">
+                  Выберите столбец, где значения одного аккаунта записаны в
+                  одной ячейке.
+                </div>
+              </div>
+              <div id="delimiterField" class="field" hidden>
+                <label for="delimiter">Как разделены значения в ячейке?</label
+                ><select id="delimiter">
+                  <option value="|">Знаком | (вертикальная черта)</option>
+                  <option value=";">Точкой с запятой ;</option>
+                </select>
+                <div class="help">
+                  Обычно используется знак |. Например: почта | пароль |
+                  резервная почта.
+                </div>
+              </div>
+              <div id="mappingSection" hidden>
+                <div class="divider"></div>
+                <div class="label mapping-heading">
+                  Что записать в каждую строку описания?
+                </div>
+                <div class="mapping-grid" id="mappingGrid"></div>
+                <div class="help">
+                  Значения считаются слева направо. Пример: почта | пароль |
+                  резервная почта | US | телефон | SMS-ссылка | код. Страна
+                  здесь стоит на 4-м месте и пропускается; поэтому телефон —
+                  значение 5.
+                </div>
+                <label class="switch-row"
+                  ><input id="trimValues" type="checkbox" checked /> Удалять
+                  пробелы в начале и конце каждого значения</label
+                >
+              </div>
+              <div class="footnote">
+                В Octo описание ограничено 1024 символами.
+              </div>
+            </div>
+          </section>
+          <section class="panel history-panel" id="historyPanel" hidden>
+            <div class="panel-head">
+              <h2>История загрузок</h2>
+              <button class="secondary" id="clearHistory" type="button" hidden>
+                Очистить
+              </button>
+            </div>
+            <div class="panel-body">
+              <div class="history-list" id="historyList">
+                <div class="history-empty">
+                  Загруженные файлы появятся здесь.
+                </div>
+              </div>
+              <div class="history-note">
+                Файлы хранятся в этом браузере на устройстве. В таблицах могут
+                быть пароли и токены. Удалите записи, чтобы стереть сохранённые
+                копии.
+              </div>
+            </div>
+          </section>
+        </div>
+        <section class="right-column panel">
+          <div class="panel-head">
+            <h2>Предпросмотр</h2>
+            <div class="preview-actions">
+              <div class="stats" id="stats" hidden>
+                <span class="stat"
+                  ><strong id="rowCount">0</strong>профилей</span
+                ><span class="stat"
+                  ><strong id="longCount">0</strong>длинных</span
+                >
+              </div>
+              <button
+                class="secondary"
+                id="downloadCsvButton"
+                type="button"
+                disabled
+                title="Скачать CSV"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M12 3v12m0 0 5-5m-5 5-5-5" />
+                  <path d="M5 17v3h14v-3" /></svg
+                >CSV</button
+              ><button
+                class="secondary"
+                id="downloadXlsxButton"
+                type="button"
+                disabled
+                title="Скачать XLSX"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M12 3v12m0 0 5-5m-5 5-5-5" />
+                  <path d="M5 17v3h14v-3" /></svg
+                >XLSX
+              </button>
+            </div>
+          </div>
+          <div id="emptyState" class="preview-empty" hidden>
+            <div>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              >
+                <path d="M4 4h16v16H4z" />
+                <path d="M8 8h8M8 12h8M8 16h5" />
+              </svg>
+              <div>Загрузите файл, чтобы увидеть готовые описания</div>
+            </div>
+          </div>
+          <div id="previewContent" hidden></div>
+        </section>
+      </div>
+      <div class="notice" id="notice" role="status"></div>
     </main>
-  </div>
+    <script>
+      (() => {
+        const fields = [
+          { key: "email", label: "Почта", index: 0 },
+          { key: "password", label: "Пароль", index: 1 },
+          { key: "recovery", label: "Резервная почта", index: 2 },
+          { key: "phone", label: "Телефон", index: 4 },
+          { key: "sms", label: "SMS-ссылка", index: 5 },
+          { key: "extra", label: "Дополнительный код", index: 6 },
+        ];
+        const $ = (id) => document.getElementById(id);
+        document
+          .querySelectorAll("[title]")
+          .forEach((element) => element.removeAttribute("title"));
+        const state = {
+          workbook: null,
+          fileName: "",
+          matrix: [],
+          headerRow: 0,
+          headers: [],
+          dataRows: [],
+          columnIndex: -1,
+          records: [],
+          output: [],
+          historyId: null,
+        };
+        const dropzone = $("dropzone");
+        const fileInput = $("fileInput");
+        const mappingGrid = $("mappingGrid");
+        const confirmDialog = document.createElement("dialog");
+        confirmDialog.className = "confirm-dialog";
+        confirmDialog.setAttribute("aria-labelledby", "confirmTitle");
+        confirmDialog.innerHTML =
+          '<div class="confirm-dialog-body"><h2 id="confirmTitle">Подтвердите действие</h2><p id="confirmMessage"></p><div class="confirm-dialog-actions"><button type="button" id="confirmCancel" autofocus>Отмена</button><button type="button" class="confirm-delete" id="confirmDelete">Удалить</button></div></div>';
+        document.body.append(confirmDialog);
+        $("confirmCancel").addEventListener("click", () =>
+          confirmDialog.close("cancel"),
+        );
+        $("confirmDelete").addEventListener("click", () =>
+          confirmDialog.close("confirm"),
+        );
+        const previewSearchRow = document.createElement("div");
+        previewSearchRow.className = "preview-search-row";
+        const previewSearch = document.createElement("input");
+        previewSearch.id = "previewSearch";
+        previewSearch.type = "text";
+        previewSearch.placeholder =
+          "\u041F\u043E\u0438\u0441\u043A \u043F\u043E \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u044E \u0438\u043B\u0438 \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u044E";
+        previewSearch.setAttribute("aria-label", previewSearch.placeholder);
+        previewSearch.disabled = true;
+        const searchCount = document.createElement("span");
+        searchCount.id = "searchCount";
+        searchCount.className = "search-count";
+        searchCount.setAttribute("aria-live", "polite");
+        searchCount.hidden = true;
+        previewSearchRow.append(previewSearch, searchCount);
+        const previewHeader = document.querySelector(
+          ".right-column .panel-head",
+        );
+        const previewActions = previewHeader.querySelector(".preview-actions");
+        previewHeader.querySelector("h2").remove();
+        previewHeader.insertBefore(previewSearchRow, previewActions);
+        previewActions.insertBefore($("stats"), previewActions.firstChild);
+        const searchEmpty = document.createElement("div");
+        searchEmpty.id = "searchEmpty";
+        searchEmpty.className = "preview-empty search-empty";
+        searchEmpty.textContent =
+          "\u0421\u043E\u0432\u043F\u0430\u0434\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E";
+        searchEmpty.hidden = true;
+        $("emptyState").before(searchEmpty);
+        let historyDbPromise;
+        const sessionKey = "octo-formatter-view-v1";
+        let historyEntries = [];
+        let startupSnapshot = null;
+        let previewSignature = "";
+        const previewResizeObserver = new ResizeObserver((entries) => {
+          for (const { target } of entries) {
+            target
+              .closest("table")
+              .style.setProperty(
+                "--preview-scrollbar-width",
+                `${target.offsetWidth - target.clientWidth}px`,
+              );
+          }
+        });
 
-  <script>
-    (() => {
-      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-      const form = document.getElementById('secretForm');
-      const input = document.getElementById('secret');
-      const error = document.getElementById('error');
-      const card = document.getElementById('codeCard');
-      const codeOutput = document.getElementById('code');
-      const secondsOutput = document.getElementById('seconds');
-      const timerFill = document.getElementById('timerFill');
-      const toast = document.getElementById('toast');
-      const storageKey = 'auth-tools-totp-secret';
-      let secretBytes = null;
-      let lastCounter = -1;
-      let updateRunning = false;
-      let secretVersion = 0;
-      let toastTimer;
+        fields.forEach((field) => {
+          const label = document.createElement("label");
+          label.htmlFor = `map-${field.key}`;
+          label.textContent = field.label;
+          const select = document.createElement("select");
+          select.id = `map-${field.key}`;
+          select.dataset.field = field.key;
+          mappingGrid.append(label, select);
+        });
 
-      function decodeBase32(value) {
-        const normalized = value.toUpperCase().replace(/[\s=-]/g, '');
-        if (!normalized) return null;
-        if (!/^[A-Z2-7]+$/.test(normalized)) throw new Error('Используйте только символы A–Z и цифры 2–7.');
-        let bits = 0;
-        let buffer = 0;
-        const bytes = [];
-        for (const char of normalized) {
-          buffer = (buffer << 5) | alphabet.indexOf(char);
-          bits += 5;
-          if (bits >= 8) {
-            bits -= 8;
-            bytes.push((buffer >> bits) & 255);
+        $("chooseFile").addEventListener("click", () => fileInput.click());
+        dropzone.addEventListener("click", (event) => {
+          if (!event.target.closest("button")) fileInput.click();
+        });
+        dropzone.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInput.click();
+          }
+        });
+        fileInput.addEventListener("change", () => {
+          if (fileInput.files[0]) loadFile(fileInput.files[0]);
+        });
+        $("sheetSelect").addEventListener("change", () => {
+          loadSheet($("sheetSelect").value);
+          rememberSheet($("sheetSelect").value);
+        });
+        $("descriptionColumn").addEventListener("change", () => {
+          state.columnIndex = Number($("descriptionColumn").value);
+          updatePreview();
+        });
+        $("delimiter").addEventListener("change", updatePreview);
+        $("trimValues").addEventListener("change", updatePreview);
+        mappingGrid.addEventListener("change", updatePreview);
+        $("downloadCsvButton").addEventListener("click", downloadCsv);
+        $("downloadXlsxButton").addEventListener("click", downloadXlsx);
+        previewSearch.addEventListener("input", () => {
+          applyPreviewSearch();
+          saveSession();
+        });
+        let descriptionPointerStart = null;
+        $("previewContent").addEventListener("pointerdown", (event) => {
+          const description = event.target.closest(".description");
+          descriptionPointerStart =
+            description && event.button === 0
+              ? { description, x: event.clientX, y: event.clientY }
+              : null;
+        });
+        $("previewContent").addEventListener("pointerup", (event) => {
+          const start = descriptionPointerStart;
+          descriptionPointerStart = null;
+          if (
+            !start ||
+            !start.description.contains(event.target) ||
+            Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4
+          )
+            return;
+          selectDescription(start.description);
+        });
+        $("previewContent").addEventListener("dblclick", (event) => {
+          const description = event.target.closest(".description");
+          if (!description) return;
+          const range = document.createRange();
+          range.selectNodeContents(description);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        });
+        $("clearHistory").addEventListener("click", clearHistory);
+        $("historyList").addEventListener("click", handleHistoryClick);
+        if ("scrollRestoration" in history)
+          history.scrollRestoration = "manual";
+        ["dragenter", "dragover"].forEach((name) =>
+          dropzone.addEventListener(name, (event) => {
+            event.preventDefault();
+            dropzone.classList.add("drag");
+          }),
+        );
+        ["dragleave", "drop"].forEach((name) =>
+          dropzone.addEventListener(name, (event) => {
+            event.preventDefault();
+            dropzone.classList.remove("drag");
+          }),
+        );
+        dropzone.addEventListener("drop", (event) => {
+          const file = event.dataTransfer.files[0];
+          if (file) loadFile(file);
+        });
+        startupSnapshot = restoreSession();
+        if (startupSnapshot)
+          document.documentElement.removeAttribute("data-restoring");
+        window.addEventListener("pagehide", saveSession);
+        document.addEventListener("DOMContentLoaded", initializeApp, {
+          once: true,
+        });
+
+        async function initializeApp() {
+          try {
+            await restoreLatestFile();
+            await refreshHistory();
+          } finally {
+            $("historyPanel").hidden = false;
+            document.documentElement.removeAttribute("data-restoring");
+            saveSession();
           }
         }
-        if (bits > 0 && (buffer & ((1 << bits) - 1)) !== 0) throw new Error('Проверьте Base32-ключ: некорректное окончание.');
-        if (!bytes.length) throw new Error('Введите корректный секретный ключ Base32.');
-        return new Uint8Array(bytes);
-      }
 
-      async function makeCode(counter, keyBytes) {
-        const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
-        const message = new Uint8Array(8);
-        let value = BigInt(counter);
-        for (let i = 7; i >= 0; i--) { message[i] = Number(value & 255n); value >>= 8n; }
-        const digest = new Uint8Array(await crypto.subtle.sign('HMAC', key, message));
-        const offset = digest[digest.length - 1] & 15;
-        const binary = ((digest[offset] & 127) << 24) | (digest[offset + 1] << 16) | (digest[offset + 2] << 8) | digest[offset + 3];
-        return String(binary % 1_000_000).padStart(6, '0');
-      }
+        function currentSettings() {
+          return {
+            columnIndex: state.columnIndex,
+            delimiter: $("delimiter").value,
+            trim: $("trimValues").checked,
+            mappings: [...mappingGrid.querySelectorAll("select")].map(
+              (select) => select.value,
+            ),
+            search: $("previewSearch").value,
+          };
+        }
 
-      async function update() {
-        const now = Date.now() / 1000;
-        const counter = Math.floor(now / 30);
-        const remaining = 30 - Math.floor(now % 30);
-        secondsOutput.textContent = String(remaining);
-        timerFill.style.width = `${(remaining / 30) * 100}%`;
-        if (!secretBytes || counter === lastCounter || updateRunning) return;
-        const keyBytes = secretBytes;
-        const version = secretVersion;
-        updateRunning = true;
-        try {
-          const code = await makeCode(counter, keyBytes);
-          if (version === secretVersion && counter === Math.floor(Date.now() / 30000)) {
-            codeOutput.textContent = code;
-            lastCounter = counter;
+        function saveSession() {
+          try {
+            if (!state.historyId) {
+              sessionStorage.removeItem(sessionKey);
+              return;
+            }
+            sessionStorage.setItem(
+              sessionKey,
+              JSON.stringify({
+                version: 1,
+                historyId: state.historyId,
+                fileName: state.fileName,
+                headers: state.headers,
+                records: state.records,
+                settings: currentSettings(),
+                sheetNames: [...$("sheetSelect").options].map(
+                  (option) => option.value,
+                ),
+                sheet: $("sheetSelect").value,
+                historyEntries,
+                previewScroll:
+                  $("previewContent").querySelector(".preview-wrap")
+                    ?.scrollTop || 0,
+                pageScroll: window.scrollY,
+              }),
+            );
+          } catch (_) {
+            try {
+              sessionStorage.removeItem(sessionKey);
+            } catch (_) {
+              /* Storage can be disabled by the browser. */
+            }
           }
-        } catch {
-          if (version === secretVersion) showError('Генерация недоступна в этом браузере. Откройте страницу по HTTPS или локально.');
-        } finally { updateRunning = false; }
-      }
-
-      function showError(message, invalid = false) {
-        error.textContent = message;
-        input.setAttribute('aria-invalid', invalid ? 'true' : 'false');
-      }
-
-      function showToast(message) {
-        toast.textContent = message;
-        toast.classList.add('visible');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('visible'), 1400);
-      }
-
-      input.addEventListener('input', () => {
-        form.classList.toggle('has-value', input.value.length > 0);
-        secretVersion += 1;
-        lastCounter = -1;
-        codeOutput.textContent = '------';
-        try {
-          if (input.value.trim()) localStorage.setItem(storageKey, input.value);
-          else localStorage.removeItem(storageKey);
-        } catch { /* Storage may be unavailable in private browsing. */ }
-        try {
-          secretBytes = decodeBase32(input.value);
-          showError('');
-          card.classList.toggle('visible', Boolean(secretBytes));
-          if (secretBytes) update();
-        } catch (err) {
-          secretBytes = null;
-          card.classList.remove('visible');
-          showError(err.message, true);
         }
-      });
 
-      document.getElementById('clear').addEventListener('click', () => {
-        input.value = '';
-        input.dispatchEvent(new Event('input'));
-        input.focus();
-      });
-
-      async function copyCode() {
-        if (!/^\d{6}$/.test(codeOutput.textContent)) return;
-        try {
-          await navigator.clipboard.writeText(codeOutput.textContent);
-          showToast('Код скопирован');
-        } catch {
-          showToast('Не удалось скопировать код. Выделите его и скопируйте вручную.');
+        function restoreSession() {
+          try {
+            const saved = JSON.parse(
+              sessionStorage.getItem(sessionKey) || "null",
+            );
+            if (
+              !saved ||
+              saved.version !== 1 ||
+              !saved.historyId ||
+              !Array.isArray(saved.records) ||
+              !Array.isArray(saved.headers) ||
+              !Array.isArray(saved.sheetNames) ||
+              !Array.isArray(saved.historyEntries) ||
+              !Array.isArray(saved.settings?.mappings)
+            )
+              return null;
+            state.historyId = saved.historyId;
+            state.fileName = saved.fileName;
+            state.headers = saved.headers;
+            $("fileName").textContent = saved.fileName;
+            $("sheetSelect").replaceChildren(
+              ...saved.sheetNames.map((name) => new Option(name, name)),
+            );
+            $("sheetSelect").value = saved.sheet;
+            $("sheetField").hidden = saved.sheetNames.length < 2;
+            renderSourceControls(saved.settings);
+            $("previewSearch").value = saved.settings.search || "";
+            renderPreview(saved.records);
+            historyEntries = saved.historyEntries;
+            renderHistory(historyEntries);
+            $("historyPanel").hidden = false;
+            const scrollArea =
+              $("previewContent").querySelector(".preview-wrap");
+            if (scrollArea) scrollArea.scrollTop = saved.previewScroll || 0;
+            window.scrollTo(0, saved.pageScroll || 0);
+            return saved;
+          } catch (_) {
+            return null;
+          }
         }
-      }
 
-      card.addEventListener('click', copyCode);
-      card.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          copyCode();
+        function notice(message, error = false) {
+          const box = $("notice");
+          box.textContent = message;
+          box.className = `notice show${error ? " error" : ""}`;
         }
-      });
 
-      try {
-        const savedSecret = localStorage.getItem(storageKey);
-        if (savedSecret) {
-          input.value = savedSecret;
-          input.dispatchEvent(new Event('input'));
+        async function loadFile(
+          file,
+          saveToHistory = true,
+          historyId = null,
+          rememberedSheet = "",
+          savedSettings = null,
+        ) {
+          if (!savedSettings) $("previewSearch").value = "";
+          $("notice").className = "notice";
+          if (!window.XLSX) {
+            notice(
+              "Не удалось загрузить модуль чтения Excel. Проверьте подключение к интернету и обновите страницу.",
+              true,
+            );
+            return;
+          }
+          try {
+            const buffer = await file.arrayBuffer();
+            state.workbook = XLSX.read(buffer, { type: "array", raw: false });
+            state.fileName = file.name;
+            state.historyId = historyId;
+            $("fileName").textContent = file.name;
+            $("sheetSelect").replaceChildren(
+              ...state.workbook.SheetNames.map(
+                (name) => new Option(name, name),
+              ),
+            );
+            $("sheetField").hidden = state.workbook.SheetNames.length < 2;
+            const sheetName = state.workbook.SheetNames.includes(
+              rememberedSheet,
+            )
+              ? rememberedSheet
+              : state.workbook.SheetNames[0];
+            $("sheetSelect").value = sheetName;
+            loadSheet(sheetName, savedSettings);
+            if (saveToHistory) {
+              const id = crypto.randomUUID
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+              try {
+                await storeHistory({
+                  id,
+                  name: file.name,
+                  size: file.size,
+                  modified: file.lastModified || Date.now(),
+                  opened: Date.now(),
+                  sheet: sheetName,
+                  blob: new Blob([buffer], {
+                    type: file.type || "application/octet-stream",
+                  }),
+                });
+                state.historyId = id;
+                await refreshHistory();
+              } catch (error) {
+                notice(
+                  `Файл открыт, но не сохранён в истории: ${error.message || "локальное хранилище недоступно"}`,
+                  true,
+                );
+              }
+            }
+            saveSession();
+          } catch (error) {
+            notice(
+              `Не удалось прочитать файл: ${error.message || "проверьте формат файла"}`,
+              true,
+            );
+          }
         }
-      } catch { /* Storage may be unavailable in private browsing. */ }
-      update();
-      setInterval(update, 200);
-    })();
-  </script>
-</body>
+
+        function openHistoryDb() {
+          if (!("indexedDB" in window))
+            return Promise.reject(
+              new Error("Локальное хранилище недоступно в этом браузере."),
+            );
+          if (!historyDbPromise)
+            historyDbPromise = new Promise((resolve, reject) => {
+              const request = indexedDB.open("octo-description-formatter", 1);
+              request.onupgradeneeded = () =>
+                request.result.createObjectStore("files", { keyPath: "id" });
+              request.onsuccess = () => resolve(request.result);
+              request.onerror = () =>
+                reject(
+                  request.error ||
+                    new Error("Не удалось открыть локальное хранилище."),
+                );
+              request.onblocked = () =>
+                reject(
+                  new Error(
+                    "Закройте другие вкладки конвертера и попробуйте снова.",
+                  ),
+                );
+            });
+          return historyDbPromise;
+        }
+        async function storeHistory(record) {
+          const db = await openHistoryDb();
+          await new Promise((resolve, reject) => {
+            const request = db
+              .transaction("files", "readwrite")
+              .objectStore("files")
+              .put(record);
+            request.onsuccess = resolve;
+            request.onerror = () =>
+              reject(
+                request.error ||
+                  new Error("Не удалось сохранить файл в истории."),
+              );
+          });
+        }
+        async function readHistory() {
+          const db = await openHistoryDb();
+          return new Promise((resolve, reject) => {
+            const request = db
+              .transaction("files", "readonly")
+              .objectStore("files")
+              .getAll();
+            request.onsuccess = () =>
+              resolve(request.result.sort((a, b) => b.opened - a.opened));
+            request.onerror = () =>
+              reject(
+                request.error || new Error("Не удалось прочитать историю."),
+              );
+          });
+        }
+        async function removeHistory(id) {
+          const db = await openHistoryDb();
+          return new Promise((resolve, reject) => {
+            const request = db
+              .transaction("files", "readwrite")
+              .objectStore("files")
+              .delete(id);
+            request.onsuccess = resolve;
+            request.onerror = () =>
+              reject(request.error || new Error("Не удалось удалить запись."));
+          });
+        }
+        async function removeAllHistory() {
+          const db = await openHistoryDb();
+          return new Promise((resolve, reject) => {
+            const request = db
+              .transaction("files", "readwrite")
+              .objectStore("files")
+              .clear();
+            request.onsuccess = resolve;
+            request.onerror = () =>
+              reject(
+                request.error || new Error("Не удалось очистить историю."),
+              );
+          });
+        }
+        async function rememberSheet(sheetName) {
+          if (!state.historyId) return;
+          try {
+            const entry = (await readHistory()).find(
+              (item) => item.id === state.historyId,
+            );
+            if (entry) {
+              entry.sheet = sheetName;
+              await storeHistory(entry);
+            }
+          } catch (_) {
+            /* Keep the current preview usable if history storage is unavailable. */
+          }
+        }
+        async function refreshHistory() {
+          try {
+            const entries = await readHistory();
+            historyEntries = entries.map(({ id, name, size, opened }) => ({
+              id,
+              name,
+              size,
+              opened,
+            }));
+            renderHistory(historyEntries);
+            saveSession();
+          } catch (error) {
+            if (!historyEntries.length)
+              $("historyList").textContent =
+                "История недоступна в этом режиме браузера.";
+          }
+        }
+        function renderHistory(entries) {
+          $("historyList").replaceChildren();
+          $("clearHistory").hidden = entries.length === 0;
+          if (!entries.length) {
+            const empty = document.createElement("div");
+            empty.className = "history-empty";
+            empty.textContent = "Загруженные файлы появятся здесь.";
+            $("historyList").append(empty);
+            return;
+          }
+          for (const entry of entries) {
+            const row = document.createElement("div");
+            row.className = "history-entry";
+            const open = document.createElement("button");
+            open.type = "button";
+            open.className = "history-open";
+            open.dataset.openId = entry.id;
+            const name = document.createElement("span");
+            name.className = "history-name";
+            name.textContent = entry.name;
+            const meta = document.createElement("span");
+            meta.className = "history-meta";
+            meta.textContent = `${new Date(entry.opened).toLocaleString("ru-RU")} · ${formatSize(entry.size)}`;
+            open.append(name, meta);
+            const del = document.createElement("button");
+            del.type = "button";
+            del.className = "history-delete";
+            del.dataset.deleteId = entry.id;
+            del.setAttribute("aria-label", `Удалить ${entry.name} из истории`);
+            del.innerHTML =
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>';
+            row.append(open, del);
+            $("historyList").append(row);
+          }
+        }
+        function resetCurrentFile() {
+          Object.assign(state, {
+            workbook: null,
+            fileName: "",
+            matrix: [],
+            headerRow: 0,
+            headers: [],
+            dataRows: [],
+            columnIndex: -1,
+            records: [],
+            output: [],
+            historyId: null,
+          });
+          startupSnapshot = null;
+          fileInput.value = "";
+          $("fileName").textContent = "";
+          $("sheetSelect").replaceChildren();
+          $("descriptionColumn").replaceChildren();
+          $("previewSearch").value = "";
+          for (const id of [
+            "sheetField",
+            "columnField",
+            "delimiterField",
+            "mappingSection",
+          ])
+            $(id).hidden = true;
+          renderPreview([]);
+          saveSession();
+        }
+
+        async function restoreLatestFile() {
+          try {
+            const entries = await readHistory();
+            const entry =
+              entries.find((item) => item.id === startupSnapshot?.historyId) ||
+              entries[0];
+            if (!entry) {
+              resetCurrentFile();
+              return;
+            }
+            const file = new Blob([entry.blob], { type: entry.blob.type });
+            Object.defineProperty(file, "name", { value: entry.name });
+            Object.defineProperty(file, "lastModified", {
+              value: entry.modified,
+            });
+            const saved =
+              entry.id === startupSnapshot?.historyId ? startupSnapshot : null;
+            await loadFile(
+              file,
+              false,
+              entry.id,
+              saved?.sheet || entry.sheet,
+              saved?.settings,
+            );
+          } catch (error) {
+            $("emptyState").hidden = state.records.length > 0;
+            notice(
+              `Не удалось восстановить последний файл: ${error.message || "ошибка локального хранилища"}`,
+              true,
+            );
+          }
+        }
+        async function handleHistoryClick(event) {
+          const opener = event.target.closest("[data-open-id]");
+          const deleter = event.target.closest("[data-delete-id]");
+          try {
+            if (opener) {
+              const entry = (await readHistory()).find(
+                (item) => item.id === opener.dataset.openId,
+              );
+              if (!entry) return;
+              const file = new Blob([entry.blob], { type: entry.blob.type });
+              Object.defineProperty(file, "name", { value: entry.name });
+              Object.defineProperty(file, "lastModified", {
+                value: entry.modified,
+              });
+              await loadFile(file, false, entry.id, entry.sheet);
+            } else if (deleter) {
+              if (
+                !(await confirmAction(
+                  "Удалить сохранённую копию этого файла из истории?",
+                ))
+              )
+                return;
+              await removeHistory(deleter.dataset.deleteId);
+              if (state.historyId === deleter.dataset.deleteId)
+                resetCurrentFile();
+              await refreshHistory();
+            }
+          } catch (error) {
+            notice(
+              `Не удалось открыть историю: ${error.message || "ошибка локального хранилища"}`,
+              true,
+            );
+          }
+        }
+        async function clearHistory() {
+          if (
+            !(await confirmAction(
+              "Удалить сохранённые копии всех файлов из истории?",
+            ))
+          )
+            return;
+          try {
+            await removeAllHistory();
+            resetCurrentFile();
+            await refreshHistory();
+          } catch (error) {
+            notice(
+              `Не удалось очистить историю: ${error.message || "ошибка локального хранилища"}`,
+              true,
+            );
+          }
+        }
+        function confirmAction(message) {
+          $("confirmMessage").textContent = message;
+          return new Promise((resolve) => {
+            confirmDialog.addEventListener(
+              "close",
+              () => resolve(confirmDialog.returnValue === "confirm"),
+              { once: true },
+            );
+            confirmDialog.showModal();
+          });
+        }
+        function formatSize(bytes) {
+          if (!bytes) return "0 Б";
+          if (bytes < 1024) return `${bytes} Б`;
+          if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+          return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+        }
+
+        function loadSheet(sheetName, savedSettings = null) {
+          const sheet = state.workbook?.Sheets[sheetName];
+          if (!sheet) return;
+          state.matrix = XLSX.utils.sheet_to_json(sheet, {
+            header: 1,
+            defval: "",
+            raw: false,
+            blankrows: true,
+          });
+          const found = findHeader(state.matrix);
+          state.headerRow = found;
+          state.headers = (state.matrix[found] || []).map((value, index) =>
+            String(value || `Столбец ${index + 1}`).trim(),
+          );
+          state.dataRows = state.matrix.slice(found + 1);
+          while (state.headers.length > 0) {
+            const lastColumn = state.headers.length - 1;
+            const generatedHeader =
+              /^\u0421\u0442\u043E\u043B\u0431\u0435\u0446\s+\d+$/i.test(
+                state.headers[lastColumn],
+              );
+            const hasValues = state.dataRows.some((row) =>
+              String(row[lastColumn] ?? "").trim(),
+            );
+            if (!generatedHeader || hasValues) break;
+            state.headers.pop();
+          }
+          state.dataRows = state.dataRows.map((row) =>
+            row.slice(0, state.headers.length),
+          );
+          renderSourceControls(savedSettings);
+          updatePreview();
+        }
+
+        function renderSourceControls(savedSettings = null) {
+          const descGuess = state.headers.findIndex((name) =>
+            /description|описан/i.test(name),
+          );
+          state.columnIndex =
+            Number.isInteger(savedSettings?.columnIndex) &&
+            savedSettings.columnIndex >= 0 &&
+            savedSettings.columnIndex < state.headers.length
+              ? savedSettings.columnIndex
+              : descGuess >= 0
+                ? descGuess
+                : Math.min(1, Math.max(0, state.headers.length - 1));
+          $("descriptionColumn").replaceChildren(
+            ...state.headers.map(
+              (name, index) => new Option(name, String(index)),
+            ),
+          );
+          $("descriptionColumn").value = String(state.columnIndex);
+          $("columnField").hidden = false;
+          $("delimiterField").hidden = false;
+          $("mappingSection").hidden = false;
+          $("mappingGrid")
+            .querySelectorAll("select")
+            .forEach((select, index) => {
+              select.replaceChildren(new Option("Не включать", ""));
+              for (let pos = 1; pos <= 20; pos++)
+                select.add(new Option(`Значение ${pos}`, String(pos - 1)));
+              select.value =
+                savedSettings?.mappings?.[index] ?? String(fields[index].index);
+            });
+          if (savedSettings) {
+            $("delimiter").value = savedSettings.delimiter;
+            $("trimValues").checked = savedSettings.trim;
+          }
+        }
+
+        function findHeader(matrix) {
+          const max = Math.min(matrix.length, 12);
+          for (let row = 0; row < max; row++) {
+            const values = (matrix[row] || []).map((v) =>
+              String(v || "")
+                .trim()
+                .toLowerCase(),
+            );
+            const profile = values.some((v) =>
+              /profile\s*name|имя профиля/.test(v),
+            );
+            const description = values.some((v) =>
+              /description|описан/.test(v),
+            );
+            if (profile && description) return row;
+          }
+          return 0;
+        }
+
+        function delimiterValue() {
+          return $("delimiter").value === "\\t" ? "\t" : $("delimiter").value;
+        }
+        function isInstructionRow(row) {
+          const cells = row.map((v) => String(v ?? "").trim());
+          return cells.some((v) =>
+            /^(profile name:|profile description\.?$|supported formats:|форматы данных:)/i.test(
+              v,
+            ),
+          );
+        }
+        function updatePreview() {
+          if (!state.matrix.length) return;
+          const delimiter = delimiterValue();
+          const trim = $("trimValues").checked;
+          const mappings = [...mappingGrid.querySelectorAll("select")].map(
+            (select) => (select.value === "" ? -1 : Number(select.value)),
+          );
+          const output = [];
+          const records = [];
+          const outputProfileIndex = state.headers.findIndex((name) =>
+            /^profile\s*name$/i.test(String(name).trim()),
+          );
+          const emailPartIndex = mappings[0];
+          for (const sourceRow of state.dataRows) {
+            const row = [...sourceRow];
+            if (!row.some((value) => String(value ?? "").trim())) continue;
+            if (isInstructionRow(row)) continue;
+            const cell = String(row[state.columnIndex] ?? "");
+            const profileDelimiter = cell.includes(delimiter)
+              ? delimiter
+              : ["|", ";", "\t"].find((separator) =>
+                  cell.includes(separator),
+                ) || delimiter;
+            const pieces = cell
+              .split(delimiter)
+              .map((value) => (trim ? value.trim() : value));
+            const emailPieces =
+              profileDelimiter === delimiter
+                ? pieces
+                : cell.split(profileDelimiter);
+            const baseProfile = String(
+              row[outputProfileIndex >= 0 ? outputProfileIndex : 0] ?? "",
+            );
+            const email =
+              emailPartIndex >= 0
+                ? String(emailPieces[emailPartIndex] ?? "").trim()
+                : "";
+            const description =
+              pieces.length > 1
+                ? mappings
+                    .filter((index) => index >= 0)
+                    .map((index) => pieces[index] ?? "")
+                    .filter((value) => value !== "")
+                    .join("\n")
+                : cell;
+            const nextRow = [...row];
+            nextRow[state.columnIndex] = description;
+            if (outputProfileIndex >= 0 && emailPartIndex >= 0) {
+              if (
+                email &&
+                !baseProfile.toLowerCase().includes(email.toLowerCase())
+              ) {
+                row[outputProfileIndex] = baseProfile
+                  ? baseProfile + "|" + email
+                  : email;
+                nextRow[outputProfileIndex] = row[outputProfileIndex];
+              }
+            }
+            output.push(nextRow);
+            records.push({
+              profile:
+                baseProfile +
+                (outputProfileIndex >= 0 && email ? "\n" + email : ""),
+              description,
+            });
+          }
+          state.output = output;
+          renderPreview(records);
+          saveSession();
+        }
+
+        function renderPreview(records) {
+          state.records = records;
+          const longCount = records.filter(
+            (record) => record.description.length > 1024,
+          ).length;
+          $("rowCount").textContent = String(records.length);
+          $("longCount").textContent = String(longCount);
+          $("stats").hidden = false;
+          $("downloadCsvButton").disabled = state.output.length === 0;
+          $("downloadXlsxButton").disabled = state.output.length === 0;
+          $("emptyState").hidden = records.length > 0;
+          $("previewContent").hidden = records.length === 0;
+          const preview = records;
+          const markup = `<table class="preview-table"><thead><tr><th scope="col">Профиль</th><th scope="col">Описание</th></tr></thead><tbody class="preview-wrap">${preview.map((record) => `<tr><td class="profile-cell">${escapeHtml(record.profile)}</td><td><div class="description">${escapeHtml(record.description)}</div></td></tr>`).join("")}</tbody></table>`;
+          const signature = JSON.stringify(records);
+          if (previewSignature !== signature) {
+            previewResizeObserver.disconnect();
+            $("previewContent").innerHTML = markup;
+            previewResizeObserver.observe(
+              $("previewContent").querySelector(".preview-wrap"),
+            );
+            previewSignature = signature;
+          }
+          applyPreviewSearch();
+          if (longCount > 0)
+            notice(
+              `${longCount} описаний длиннее лимита Octo в 1024 символа. Проверьте их перед импортом.`,
+            );
+          else $("notice").className = "notice";
+        }
+
+        function applyPreviewSearch() {
+          const query = $("previewSearch").value.trim().toLocaleLowerCase();
+          const rows = [...$("previewContent").querySelectorAll("tbody tr")];
+          let matches = 0;
+          for (const row of rows) {
+            const visible =
+              !query || row.textContent.toLocaleLowerCase().includes(query);
+            row.hidden = !visible;
+            if (visible) matches++;
+          }
+          $("previewSearch").disabled = rows.length === 0;
+          $("searchCount").hidden = !query || rows.length === 0;
+          $("searchCount").textContent = matches + " / " + rows.length;
+          const noResults = Boolean(query && rows.length > 0 && matches === 0);
+          $("searchEmpty").hidden = !noResults;
+          $("searchEmpty").style.display = noResults ? "grid" : "none";
+          $("previewContent").hidden = rows.length === 0 || noResults;
+        }
+
+        function selectDescription(description) {
+          const range = document.createRange();
+          range.selectNodeContents(description);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        function escapeHtml(value) {
+          return String(value).replace(
+            /[&<>"']/g,
+            (char) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[char],
+          );
+        }
+        function csvCell(value) {
+          const text = String(value ?? "");
+          return `"${text.replace(/"/g, '""')}"`;
+        }
+        function exportTableData() {
+          let columnCount = state.headers.length;
+          while (columnCount > 0) {
+            const header = String(state.headers[columnCount - 1] ?? "")
+              .trim()
+              .replace(
+                /^\u0421\u0442\u043E\u043B\u0431\u0435\u0446\s+\d+$/i,
+                "",
+              );
+            const empty = state.output.every(
+              (row) => !String(row[columnCount - 1] ?? "").trim(),
+            );
+            if (empty && (!header || /^Столбец\s+\d+$/i.test(header)))
+              columnCount--;
+            else break;
+          }
+          return {
+            headers: state.headers.slice(0, columnCount),
+            rows: state.output.map((row) => row.slice(0, columnCount)),
+          };
+        }
+        function downloadCsv() {
+          if (!state.output.length) return;
+          const { headers, rows: dataRows } = exportTableData();
+          const rows = [headers, ...dataRows];
+          const csv =
+            "\uFEFF" +
+            rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          const base =
+            state.fileName.replace(/\.[^.]+$/, "") || "octo-profiles";
+          link.download = `${base}-formatted.csv`;
+          document.body.append(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        function downloadXlsx() {
+          if (!state.output.length || !window.XLSX) return;
+          const { headers, rows: dataRows } = exportTableData();
+          const profileNameColumn = headers.findIndex((header) =>
+            /profile\s*name|имя профиля/i.test(header),
+          );
+          const descriptionColumn = headers.findIndex((header) =>
+            /description|описан/i.test(header),
+          );
+          const hasOctoHeaders =
+            profileNameColumn >= 0 && descriptionColumn >= 0;
+          const guideRow = hasOctoHeaders ? headers.map(octoColumnGuide) : [];
+          const dataStart = hasOctoHeaders ? 2 : 1;
+          const sheet = XLSX.utils.aoa_to_sheet(
+            hasOctoHeaders
+              ? [headers, guideRow, ...dataRows]
+              : [headers, ...dataRows],
+          );
+          sheet["!cols"] = headers.map((header) => {
+            const name = String(header).trim().toLowerCase();
+            if (/profile\s*name|имя профиля/.test(name)) return { wch: 53 };
+            if (/description|описан/.test(name)) return { wch: 112 };
+            if (/proxy|прокс/.test(name)) return { wch: 48 };
+            if (/cookie|куки/.test(name)) return { wch: 33 };
+            if (/user\s*agent/.test(name)) return { wch: 69 };
+            if (/^os$/.test(name)) return { wch: 33 };
+            if (/^folder$/.test(name)) return { wch: 48 };
+            return {
+              wch: Math.min(36, Math.max(18, String(header).length + 2)),
+            };
+          });
+          sheet["!rows"] = hasOctoHeaders
+            ? [{ hpt: 24 }, { hpt: 140 }]
+            : [{ hpt: 24 }];
+          const lastColumn = headers.length - 1;
+          for (let column = 0; column <= lastColumn; column++) {
+            const headerCell =
+              sheet[XLSX.utils.encode_cell({ r: 0, c: column })];
+            if (headerCell)
+              headerCell.s = {
+                fill: { fgColor: { rgb: "B4C7E7" } },
+                font: { bold: true, color: { rgb: "111111" } },
+                alignment: { vertical: "center" },
+                border: { bottom: { style: "thin", color: { rgb: "8FAADC" } } },
+              };
+            if (hasOctoHeaders) {
+              const guideCell =
+                sheet[XLSX.utils.encode_cell({ r: 1, c: column })];
+              if (guideCell)
+                guideCell.s = {
+                  fill: { fgColor: { rgb: "E7E6E6" } },
+                  font: { color: { rgb: "222222" }, sz: 10 },
+                  alignment: { vertical: "top", wrapText: true },
+                };
+            }
+          }
+          for (let row = dataStart; row < dataStart + dataRows.length; row++) {
+            const descriptionCell =
+              sheet[XLSX.utils.encode_cell({ r: row, c: descriptionColumn })];
+            if (descriptionCell)
+              descriptionCell.s = {
+                alignment: { vertical: "top", wrapText: true },
+              };
+          }
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, sheet, "Profiles");
+          const bytes = XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "array",
+            compression: true,
+          });
+          const blob = new Blob([bytes], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          const base =
+            state.fileName.replace(/\.[^.]+$/, "") || "octo-profiles";
+          link.download = `${base}-formatted.xlsx`;
+          document.body.append(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        function octoColumnGuide(header) {
+          const name = String(header).trim().toLowerCase();
+          if (/profile\s*name|имя профиля/.test(name))
+            return "Profile name; will be generated automatically if left empty.\nMax length: 90 symbols; longer names will be truncated.";
+          if (/description|описан/.test(name))
+            return "Profile description.\nMax length: 1024 symbols; longer descriptions will be added to profiles with an error.";
+          if (/proxy|прокс/.test(name))
+            return "Supported formats: HTTP, HTTPS, SOCKS5, SSH. See the full list of supported formats here:\nhttps://docs.octobrowser.net/en/profiles/profiles-in-bulk/";
+          if (/cookie|куки/.test(name))
+            return "Supported formats: Netscape or Json.\n\nWhen importing profiles as .txt or .csv files, the maximum cookies field size is 240 Kb. If you need to add a larger cookie file, add it in the profile manually.";
+          if (/user\s*agent/.test(name))
+            return "Example:\nMozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\n\nUser Agent is automatically adjusted to include the correct information about the browser and its version. If you need to use a specific User Agent, configure it in the profile manually.\n\nOnly Win, Mac and Android are supported.\nLines containing other OS will be skipped.";
+          if (/^os$/.test(name))
+            return "Possible values: Win, Mac Intel, Mac ARM, Android.\n\nBy default OS will be taken from User Agent. This field is used if User Agent is left empty.";
+          if (/^folder$/.test(name))
+            return "Folder of a profile. If empty, the profile will be created without a folder.";
+          return "";
+        }
+      })();
+    </script>
+  </body>
 </html>
