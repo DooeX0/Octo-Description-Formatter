@@ -168,19 +168,16 @@
       .layout {
         display: grid;
         grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
-        grid-template-rows: auto auto;
-        grid-template-areas: "source preview" "history .";
         gap: 20px;
         align-items: start;
       }
-      .source-panel {
-        grid-area: source;
-      }
-      .history-panel {
-        grid-area: history;
+      .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
       }
       .right-column {
-        grid-area: preview;
         align-self: start;
         height: max(280px, calc(100dvh - 130px));
         min-height: 0;
@@ -250,7 +247,9 @@
         overflow-wrap: anywhere;
       }
       .primary,
-      .secondary {
+      .secondary,
+      #downloadCsvButton,
+      #downloadXlsxButton {
         border: 0;
         border-radius: 5px;
         min-height: 37px;
@@ -277,7 +276,9 @@
         background: var(--control-muted);
         color: var(--ink);
       }
-      .secondary:hover {
+      .secondary:hover,
+      #downloadCsvButton:hover,
+      #downloadXlsxButton:hover {
         background: #e3e9ec;
       }
       .primary svg,
@@ -391,7 +392,8 @@
         flex: 1;
       }
       .preview-wrap {
-        height: 100%;
+        display: block;
+        flex: 1;
         min-height: 0;
         overflow: auto;
         scrollbar-gutter: stable;
@@ -401,10 +403,26 @@
         border-collapse: collapse;
         table-layout: fixed;
       }
+      .preview-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .preview-table thead {
+        display: block;
+        flex: none;
+        background: var(--table-head);
+        border-bottom: 1px solid var(--line);
+      }
+      .preview-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+      .preview-table thead tr {
+        width: calc(100% - var(--preview-scrollbar-width, 10px));
+      }
       th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
         text-align: left;
         background: var(--table-head);
         color: var(--muted);
@@ -412,7 +430,6 @@
         text-transform: uppercase;
         font-weight: 650;
         padding: 10px 13px;
-        border-bottom: 1px solid var(--line);
       }
       td {
         padding: 11px 13px;
@@ -667,7 +684,9 @@
       [data-theme="dark"] .dropzone {
         border-color: #363a3d;
       }
-      [data-theme="dark"] .secondary:hover {
+      [data-theme="dark"] .secondary:hover,
+      [data-theme="dark"] #downloadCsvButton:hover,
+      [data-theme="dark"] #downloadXlsxButton:hover {
         background: #35454d;
       }
       [data-theme="dark"] .history-open:hover {
@@ -690,8 +709,6 @@
         }
         .layout {
           grid-template-columns: 1fr;
-          grid-template-rows: auto auto auto;
-          grid-template-areas: "source" "history" "preview";
         }
         .right-column {
           height: 70vh;
@@ -753,6 +770,7 @@
     </header>
     <main>
       <div class="layout">
+        <div class="left-column">
         <section class="panel source-panel">
           <div class="panel-head"><h2>Источник и поля</h2></div>
           <div class="panel-body">
@@ -843,6 +861,7 @@
             </div>
           </div>
         </section>
+        </div>
         <section class="right-column panel">
           <div class="panel-head">
             <h2>Предпросмотр</h2>
@@ -983,6 +1002,14 @@
         let historyEntries = [];
         let startupSnapshot = null;
         let previewSignature = "";
+        const previewResizeObserver = new ResizeObserver((entries) => {
+          for (const { target } of entries) {
+            target.closest("table").style.setProperty(
+              "--preview-scrollbar-width",
+              `${target.offsetWidth - target.clientWidth}px`,
+            );
+          }
+        });
 
         fields.forEach((field) => {
           const label = document.createElement("label");
@@ -1401,6 +1428,36 @@
             $("historyList").append(row);
           }
         }
+        function resetCurrentFile() {
+          Object.assign(state, {
+            workbook: null,
+            fileName: "",
+            matrix: [],
+            headerRow: 0,
+            headers: [],
+            dataRows: [],
+            columnIndex: -1,
+            records: [],
+            output: [],
+            historyId: null,
+          });
+          startupSnapshot = null;
+          fileInput.value = "";
+          $("fileName").textContent = "";
+          $("sheetSelect").replaceChildren();
+          $("descriptionColumn").replaceChildren();
+          $("previewSearch").value = "";
+          for (const id of [
+            "sheetField",
+            "columnField",
+            "delimiterField",
+            "mappingSection",
+          ])
+            $(id).hidden = true;
+          renderPreview([]);
+          saveSession();
+        }
+
         async function restoreLatestFile() {
           try {
             const entries = await readHistory();
@@ -1408,20 +1465,7 @@
               entries.find((item) => item.id === startupSnapshot?.historyId) ||
               entries[0];
             if (!entry) {
-              state.historyId = null;
-              state.records = [];
-              state.output = [];
-              state.fileName = "";
-              $("fileName").textContent = "";
-              for (const id of [
-                "sheetField",
-                "columnField",
-                "delimiterField",
-                "mappingSection",
-              ])
-                $(id).hidden = true;
-              renderPreview([]);
-              saveSession();
+              resetCurrentFile();
               return;
             }
             const file = new Blob([entry.blob], { type: entry.blob.type });
@@ -1470,7 +1514,7 @@
                 return;
               await removeHistory(deleter.dataset.deleteId);
               if (state.historyId === deleter.dataset.deleteId)
-                state.historyId = null;
+                resetCurrentFile();
               await refreshHistory();
             }
           } catch (error) {
@@ -1489,7 +1533,7 @@
             return;
           try {
             await removeAllHistory();
-            state.historyId = null;
+            resetCurrentFile();
             await refreshHistory();
           } catch (error) {
             notice(
@@ -1684,10 +1728,14 @@
           $("emptyState").hidden = records.length > 0;
           $("previewContent").hidden = records.length === 0;
           const preview = records;
-          const markup = `<div class="preview-wrap"><table><thead><tr><th>Профиль</th><th>Описание</th></tr></thead><tbody>${preview.map((record) => `<tr><td class="profile-cell">${escapeHtml(record.profile)}</td><td><div class="description">${escapeHtml(record.description)}</div></td></tr>`).join("")}</tbody></table></div>`;
+          const markup = `<table class="preview-table"><thead><tr><th scope="col">Профиль</th><th scope="col">Описание</th></tr></thead><tbody class="preview-wrap">${preview.map((record) => `<tr><td class="profile-cell">${escapeHtml(record.profile)}</td><td><div class="description">${escapeHtml(record.description)}</div></td></tr>`).join("")}</tbody></table>`;
           const signature = JSON.stringify(records);
           if (previewSignature !== signature) {
+            previewResizeObserver.disconnect();
             $("previewContent").innerHTML = markup;
+            previewResizeObserver.observe(
+              $("previewContent").querySelector(".preview-wrap"),
+            );
             previewSignature = signature;
           }
           applyPreviewSearch();
