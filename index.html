@@ -771,96 +771,98 @@
     <main>
       <div class="layout">
         <div class="left-column">
-        <section class="panel source-panel">
-          <div class="panel-head"><h2>Источник и поля</h2></div>
-          <div class="panel-body">
-            <div
-              class="dropzone"
-              id="dropzone"
-              tabindex="0"
-              role="button"
-              aria-label="Выбрать или перетащить файл"
-            >
-              <svg
-                class="drop-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
+          <section class="panel source-panel">
+          <div class="panel-head"><h2>Импорт</h2></div>
+            <div class="panel-body">
+              <div
+                class="dropzone"
+                id="dropzone"
+                tabindex="0"
+                role="button"
+                aria-label="Выбрать или перетащить файл"
               >
-                <path d="M12 16V3m0 0L7 8m5-5 5 5" />
-                <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
-              </svg>
-              <div class="drop-title">Перетащите таблицу сюда</div>
-              <div class="drop-hint">Поддерживаются .xlsx, .csv и .txt</div>
-              <button class="secondary" id="chooseFile" type="button">
-                Выбрать файл
+                <svg
+                  class="drop-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                >
+                  <path d="M12 16V3m0 0L7 8m5-5 5 5" />
+                  <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+                </svg>
+                <div class="drop-title">Перетащите таблицу сюда</div>
+                <div class="drop-hint">Поддерживаются .xlsx, .csv и .txt</div>
+                <button class="secondary" id="chooseFile" type="button">
+                  Выбрать файл
+                </button>
+                <div class="file-name" id="fileName"></div>
+              </div>
+              <input id="fileInput" type="file" accept=".xlsx,.xls,.csv,.txt" />
+              <div id="sheetField" class="field" hidden>
+                <label for="sheetSelect">Лист книги</label
+                ><select id="sheetSelect"></select>
+              </div>
+              <div id="columnField" class="field" hidden>
+                <label for="descriptionColumn"
+                  >В каком столбце данные аккаунтов?</label
+                ><select id="descriptionColumn"></select>
+                <div class="help">
+                  Выберите столбец, где значения одного аккаунта записаны в
+                  одной ячейке.
+                </div>
+              </div>
+              <div id="delimiterField" class="field" hidden>
+                <label for="delimiter">Как разделены значения в ячейке?</label
+                ><select id="delimiter">
+                  <option value="|">Знаком | (вертикальная черта)</option>
+                  <option value=";">Точкой с запятой ;</option>
+                </select>
+                <div class="help">
+                  Обычно используется знак |. Например: почта | пароль |
+                  резервная почта.
+                </div>
+              </div>
+              <div id="mappingSection" hidden>
+                <div class="divider"></div>
+                <div class="label">Что записать в каждую строку описания?</div>
+                <div class="mapping-grid" id="mappingGrid"></div>
+                <div class="help">
+                  Значения считаются слева направо. Пример: почта | пароль |
+                  резервная почта | US | телефон | SMS-ссылка | код. Страна
+                  здесь стоит на 4-м месте и пропускается; поэтому телефон —
+                  значение 5.
+                </div>
+                <label class="switch-row"
+                  ><input id="trimValues" type="checkbox" checked /> Удалять
+                  пробелы в начале и конце каждого значения</label
+                >
+              </div>
+              <div class="footnote">
+                В Octo описание ограничено 1024 символами.
+              </div>
+            </div>
+          </section>
+          <section class="panel history-panel" id="historyPanel" hidden>
+            <div class="panel-head">
+              <h2>История загрузок</h2>
+              <button class="secondary" id="clearHistory" type="button" hidden>
+                Очистить
               </button>
-              <div class="file-name" id="fileName"></div>
             </div>
-            <input id="fileInput" type="file" accept=".xlsx,.xls,.csv,.txt" />
-            <div id="sheetField" class="field" hidden>
-              <label for="sheetSelect">Лист книги</label
-              ><select id="sheetSelect"></select>
-            </div>
-            <div id="columnField" class="field" hidden>
-              <label for="descriptionColumn"
-                >В каком столбце данные аккаунтов?</label
-              ><select id="descriptionColumn"></select>
-              <div class="help">
-                Выберите столбец, где значения одного аккаунта записаны в одной
-                ячейке.
+            <div class="panel-body">
+              <div class="history-list" id="historyList">
+                <div class="history-empty">
+                  Загруженные файлы появятся здесь.
+                </div>
+              </div>
+              <div class="history-note">
+                Файлы хранятся в этом браузере на устройстве. В таблицах могут
+                быть пароли и токены. Удалите записи, чтобы стереть сохранённые
+                копии.
               </div>
             </div>
-            <div id="delimiterField" class="field" hidden>
-              <label for="delimiter">Как разделены значения в ячейке?</label
-              ><select id="delimiter">
-                <option value="|">Знаком | (вертикальная черта)</option>
-                <option value=";">Точкой с запятой ;</option>
-                <option value="\t">Табуляцией</option>
-              </select>
-              <div class="help">
-                Обычно используется знак |. Например: почта | пароль | резервная
-                почта.
-              </div>
-            </div>
-            <div id="mappingSection" hidden>
-              <div class="divider"></div>
-              <div class="label">Что записать в каждую строку описания?</div>
-              <div class="mapping-grid" id="mappingGrid"></div>
-              <div class="help">
-                Значения считаются слева направо. Пример: почта | пароль |
-                резервная почта | US | телефон | SMS-ссылка | код. Страна здесь
-                стоит на 4-м месте и пропускается; поэтому телефон — значение 5.
-              </div>
-              <label class="switch-row"
-                ><input id="trimValues" type="checkbox" checked /> Удалять
-                пробелы в начале и конце каждого значения</label
-              >
-            </div>
-            <div class="footnote">
-              В Octo описание ограничено 1024 символами.
-            </div>
-          </div>
-        </section>
-        <section class="panel history-panel" id="historyPanel" hidden>
-          <div class="panel-head">
-            <h2>История загрузок</h2>
-            <button class="secondary" id="clearHistory" type="button" hidden>
-              Очистить
-            </button>
-          </div>
-          <div class="panel-body">
-            <div class="history-list" id="historyList">
-              <div class="history-empty">Загруженные файлы появятся здесь.</div>
-            </div>
-            <div class="history-note">
-              Файлы хранятся в этом браузере на устройстве. В таблицах могут
-              быть пароли и токены. Удалите записи, чтобы стереть сохранённые
-              копии.
-            </div>
-          </div>
-        </section>
+          </section>
         </div>
         <section class="right-column panel">
           <div class="panel-head">
@@ -1004,10 +1006,12 @@
         let previewSignature = "";
         const previewResizeObserver = new ResizeObserver((entries) => {
           for (const { target } of entries) {
-            target.closest("table").style.setProperty(
-              "--preview-scrollbar-width",
-              `${target.offsetWidth - target.clientWidth}px`,
-            );
+            target
+              .closest("table")
+              .style.setProperty(
+                "--preview-scrollbar-width",
+                `${target.offsetWidth - target.clientWidth}px`,
+              );
           }
         });
 
@@ -1574,15 +1578,22 @@
           state.headers = (state.matrix[found] || []).map((value, index) =>
             String(value || `Столбец ${index + 1}`).trim(),
           );
-        state.dataRows = state.matrix.slice(found + 1);
-        while (state.headers.length > 0) {
-          const lastColumn = state.headers.length - 1;
-          const generatedHeader = /^\u0421\u0442\u043E\u043B\u0431\u0435\u0446\s+\d+$/i.test(state.headers[lastColumn]);
-          const hasValues = state.dataRows.some((row) => String(row[lastColumn] ?? '').trim());
-          if (!generatedHeader || hasValues) break;
-          state.headers.pop();
-        }
-        state.dataRows = state.dataRows.map((row) => row.slice(0, state.headers.length));
+          state.dataRows = state.matrix.slice(found + 1);
+          while (state.headers.length > 0) {
+            const lastColumn = state.headers.length - 1;
+            const generatedHeader =
+              /^\u0421\u0442\u043E\u043B\u0431\u0435\u0446\s+\d+$/i.test(
+                state.headers[lastColumn],
+              );
+            const hasValues = state.dataRows.some((row) =>
+              String(row[lastColumn] ?? "").trim(),
+            );
+            if (!generatedHeader || hasValues) break;
+            state.headers.pop();
+          }
+          state.dataRows = state.dataRows.map((row) =>
+            row.slice(0, state.headers.length),
+          );
           renderSourceControls(savedSettings);
           updatePreview();
         }
