@@ -324,22 +324,58 @@
       }
       .mapping-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(110px, 132px);
-        gap: 8px 11px;
+        grid-template-columns: minmax(0, 1fr) minmax(136px, 148px);
+        gap: 9px 14px;
         align-items: center;
       }
       .mapping-grid label {
         font-size: 12px;
         color: var(--label);
+        line-height: 1.4;
       }
       .mapping-grid select {
-        min-height: 32px;
-        padding: 0 7px;
+        min-height: 38px;
+        padding: 0 12px;
+        border-radius: 6px;
         font-size: 12px;
+        font-weight: 500;
+        background-image: linear-gradient(var(--line), var(--line));
+        background-position: right 32px center;
+        background-size: 1px 16px;
+        background-repeat: no-repeat;
+        cursor: pointer;
+        user-select: none;
+      }
+      .mapping-heading {
+        margin-bottom: 14px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      #mappingSection > .help {
+        margin-top: 15px;
+        padding-left: 10px;
+        border-left: 2px solid var(--line);
+        line-height: 1.6;
       }
       @supports (appearance: base-select) {
         .mapping-grid select {
           appearance: base-select;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .mapping-grid select::picker-icon {
+          content: "";
+          width: 6px;
+          height: 6px;
+          border-right: 1.5px solid currentColor;
+          border-bottom: 1.5px solid currentColor;
+          margin: -3px 3px 0 auto;
+          transform: rotate(45deg);
+        }
+        .mapping-grid select:open::picker-icon {
+          margin-top: 3px;
+          transform: rotate(225deg);
         }
         .mapping-grid select::picker(select) {
           appearance: base-select;
@@ -380,9 +416,12 @@
         display: flex;
         align-items: center;
         gap: 9px;
-        margin-top: 13px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
         font-size: 12px;
         color: var(--label);
+        line-height: 1.45;
       }
       .switch-row input {
         accent-color: var(--blue);
@@ -864,7 +903,7 @@
               </div>
               <div id="mappingSection" hidden>
                 <div class="divider"></div>
-                <div class="label">Что записать в каждую строку описания?</div>
+                <div class="label mapping-heading">Что записать в каждую строку описания?</div>
                 <div class="mapping-grid" id="mappingGrid"></div>
                 <div class="help">
                   Значения считаются слева направо. Пример: почта | пароль |
