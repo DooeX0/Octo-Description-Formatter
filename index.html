@@ -772,7 +772,7 @@
       <div class="layout">
         <div class="left-column">
           <section class="panel source-panel">
-          <div class="panel-head"><h2>Импорт</h2></div>
+            <div class="panel-head"><h2>Импорт</h2></div>
             <div class="panel-body">
               <div
                 class="dropzone"
@@ -1682,15 +1682,24 @@
             if (!row.some((value) => String(value ?? "").trim())) continue;
             if (isInstructionRow(row)) continue;
             const cell = String(row[state.columnIndex] ?? "");
+            const profileDelimiter = cell.includes(delimiter)
+              ? delimiter
+              : ["|", ";", "\t"].find((separator) =>
+                  cell.includes(separator),
+                ) || delimiter;
             const pieces = cell
               .split(delimiter)
               .map((value) => (trim ? value.trim() : value));
+            const emailPieces =
+              profileDelimiter === delimiter
+                ? pieces
+                : cell.split(profileDelimiter);
             const baseProfile = String(
               row[outputProfileIndex >= 0 ? outputProfileIndex : 0] ?? "",
             );
             const email =
               emailPartIndex >= 0
-                ? String(pieces[emailPartIndex] ?? "").trim()
+                ? String(emailPieces[emailPartIndex] ?? "").trim()
                 : "";
             const description =
               pieces.length > 1
